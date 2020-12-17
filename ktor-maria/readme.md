@@ -1,15 +1,17 @@
 Board
 =====
 
-## 개요
+## Overview
 
-간단한 게시판 기능
+Sample web application using
+`Kotlin + Ktor + Exposed`
 
-### 기능목표
+### Features
 
-* 경량 마이크로 서비스
-* API GW 내에서 동작하는 것을 가정
-* 유동적으로 scale out 가능한 설계
+* Light Weight web API
+* Application run inside G/W
+* Easy for Scaleoutable
+* Just for sample(DB, TEST)
 
 ### 사용기술
 
@@ -22,12 +24,16 @@ Board
 * junit
 
 
-## 테스트
+## Test
 
-* 메모리DB 사용 기능단위 테스트
-* docker-mariadb 사용하는 CRUD 테스트
+### UnitTest - mock test
 
+* h2 memory database
 
-## 실행
+### UnitTest - real test
 
-`docker-compose up`
+* docker database
+
+### IntegrationTest - CI/CD
+
+not supported

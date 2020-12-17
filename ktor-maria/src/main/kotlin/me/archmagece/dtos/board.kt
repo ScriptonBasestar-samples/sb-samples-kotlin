@@ -48,6 +48,7 @@ data class CommentModifyRequest(
 )
 
 data class CommentResponse(
+//    val articleId: Long,
     val id: Long,
     val content: String,
 )
@@ -57,4 +58,3 @@ data class CommentResponse(
 //    @field:NotNull
 //    val token: String,
 //)
-

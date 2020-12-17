@@ -5,6 +5,12 @@ data class PageRequest(
     val pageSize: Long,
 )
 
+data class SearchRequest(
+    val pageNo: Long,
+    val pageSize: Long,
+    val keyword: String,
+)
+
 enum class SortDirection {
     ASC, DESC,
 }
@@ -12,10 +18,6 @@ enum class SortDirection {
 data class SortRequest(
     val key: String,
     val direction: SortDirection,
-)
-
-data class SearchRequest(
-    val keyword: String,
 )
 
 data class PageResponse(

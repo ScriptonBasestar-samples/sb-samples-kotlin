@@ -17,8 +17,6 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import me.archmagece.dtos.OneResponseWrapper
-import me.archmagece.services.ArticleService
-import me.archmagece.services.CommentService
 import me.archmagece.services.CommonService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils

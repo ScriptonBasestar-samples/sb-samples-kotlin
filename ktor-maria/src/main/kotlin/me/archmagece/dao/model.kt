@@ -21,7 +21,7 @@ object ArticleModel : LongIdTable(name = "t_article") {
 object CommentModel : LongIdTable(name = "t_comment") {
 
     val article = reference("article", ArticleModel, onDelete = ReferenceOption.CASCADE)
-//    val article = long("article").references(ArticleModel.id, onDelete = ReferenceOption.CASCADE)
+//    val articleId = long("article").references(ArticleModel.id, onDelete = ReferenceOption.CASCADE)
 
     val userId = long("user_id")
 
