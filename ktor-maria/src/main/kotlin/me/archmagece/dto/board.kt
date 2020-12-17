@@ -1,4 +1,4 @@
-package me.archmagece.dtos
+package me.archmagece.dto
 
 import org.hibernate.validator.constraints.Length
 import javax.validation.constraints.NotEmpty

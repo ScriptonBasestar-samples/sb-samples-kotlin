@@ -1,4 +1,4 @@
-package me.archmagece.dtos
+package me.archmagece.dto
 
 data class PageRequest(
     val pageNo: Long,

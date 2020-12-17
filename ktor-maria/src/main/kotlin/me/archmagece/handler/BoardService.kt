@@ -1,4 +1,4 @@
-package me.archmagece.services
+package me.archmagece.handler
 
 import me.archmagece.ArticleModel
 import me.archmagece.BoardStatusCode
@@ -6,7 +6,7 @@ import me.archmagece.BoardStatusException
 import me.archmagece.CommentModel
 import me.archmagece.dao.ArticleEntity
 import me.archmagece.dao.CommentEntity
-import me.archmagece.dtos.*
+import me.archmagece.dto.*
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.load
 import org.jetbrains.exposed.sql.deleteWhere

@@ -1,4 +1,4 @@
-package me.archmagece.services
+package me.archmagece.handler
 
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.TransactionManager

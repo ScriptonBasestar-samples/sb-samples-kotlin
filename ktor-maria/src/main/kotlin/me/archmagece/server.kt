@@ -16,8 +16,9 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import me.archmagece.dtos.OneResponseWrapper
-import me.archmagece.services.CommonService
+import me.archmagece.dto.OneResponseWrapper
+import me.archmagece.handler.BoardService
+import me.archmagece.handler.CommonService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -85,11 +86,10 @@ fun Application.module() {
     dbMigrate()
 
     val commonService = CommonService()
-    val articleService = ArticleService()
-    val commentService = CommentService()
+    val boardService = BoardService()
 
     install(Routing) {
-        board(commonService, articleService, commentService)
+        board(commonService, boardService)
     }
     install(StatusPages) {
         exception<IllegalArgumentException> {

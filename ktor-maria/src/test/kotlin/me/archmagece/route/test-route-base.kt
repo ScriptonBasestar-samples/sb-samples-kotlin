@@ -1,4 +1,4 @@
-package me.archmagece.http
+package me.archmagece.route
 
 import com.google.gson.Gson
 import io.ktor.application.*

@@ -1,4 +1,4 @@
-package me.archmagece
+package me.archmagece.check
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone

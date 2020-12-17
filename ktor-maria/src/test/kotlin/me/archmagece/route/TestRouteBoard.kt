@@ -1,15 +1,15 @@
-package me.archmagece.http
+package me.archmagece.route
 
-import me.archmagece.Constants
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import me.archmagece.dtos.ArticleModifyRequest
-import me.archmagece.dtos.ArticleWriteRequest
+import me.archmagece.Constants
+import me.archmagece.dto.ArticleWriteRequest
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class TestHttpArticle: TestBase() {
+
+class TestRouteBoard: TestBase() {
 
     @Test
     fun `Article 생성 - success`() = boardServer {

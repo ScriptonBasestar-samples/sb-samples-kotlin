@@ -5,9 +5,9 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import me.archmagece.dtos.*
-import me.archmagece.services.BoardService
-import me.archmagece.services.CommonService
+import me.archmagece.dto.*
+import me.archmagece.handler.BoardService
+import me.archmagece.handler.CommonService
 
 /**
  * Given values from gateway

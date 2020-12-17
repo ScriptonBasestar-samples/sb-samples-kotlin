@@ -1,4 +1,4 @@
-package me.archmagece
+package me.archmagece.libs
 
 import org.testcontainers.containers.MariaDBContainer
 
