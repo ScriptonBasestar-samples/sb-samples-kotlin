@@ -27,6 +27,9 @@ kotlin {
 ktlint {
     debug = true
 }
+configurations {
+    ktlint
+}
 
 application {
     mainClassName = 'ServerKt'
@@ -97,6 +100,8 @@ dependencies {
 //    implementation "org.jetbrains.exposed:exposed-java-time:$exposed_version"
     implementation "org.jetbrains.exposed:exposed-money:$exposed_version"
     implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"
+
+    ktlint "com.pinterest:ktlint:0.40.0"
 }
 
 // not support mariadb
@@ -106,3 +111,30 @@ dependencies {
 //    password = System.env.DB_PASS ?: ''
 //    createSchemas = true
 //}
+task ktlint(type: JavaExec, group: "verification") {
+    description = "Check Kotlin code style."
+    classpath = configurations.ktlint
+    main = "com.pinterest.ktlint.Main"
+    args "src/**/*.kt"
+    // to generate report in checkstyle format prepend following args:
+    // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
+    // to add a baseline to check against prepend following args:
+    // "--baseline=ktlint-baseline.xml"
+    // see https://github.com/pinterest/ktlint#usage for more
+}
+check.dependsOn ktlint
+
+//task ktlintFormat(type: JavaExec, group: "formatting") {
+//    description = "Fix Kotlin code style deviations."
+//    classpath = configurations.ktlint
+//    main = "com.pinterest.ktlint.Main"
+//    args "-F", "src/**/*.kt"
+//}
+
+task installKtlint(dependsOn: init, group: 'build setup') {
+    doLast {
+        addKtlintCheckGitPreCommitHook
+        addKtlintFormatGitPreCommitHook
+        print('ddddd')
+    }
+}

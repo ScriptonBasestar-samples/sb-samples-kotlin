@@ -1,11 +1,24 @@
 package me.archmagece
 
-import io.ktor.application.*
-import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import me.archmagece.dto.*
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.header
+import io.ktor.request.receive
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.delete
+import io.ktor.routing.get
+import io.ktor.routing.post
+import io.ktor.routing.put
+import io.ktor.routing.route
+import me.archmagece.dto.ArticleModifyRequest
+import me.archmagece.dto.ArticleWriteRequest
+import me.archmagece.dto.CommentModifyRequest
+import me.archmagece.dto.CommentWriteRequest
+import me.archmagece.dto.ListResponseWrapper
+import me.archmagece.dto.OneResponseWrapper
+import me.archmagece.dto.SearchRequest
 import me.archmagece.handler.BoardService
 import me.archmagece.handler.CommonService
 
@@ -36,7 +49,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
             val responseData = boardService.writeArticle(requestDto)
 
             call.respond(
-                HttpStatusCode.Created, OneResponseWrapper(
+                HttpStatusCode.Created,
+                OneResponseWrapper(
                     code = BoardStatusCode.SUCCESS.code,
                     message = BoardStatusCode.SUCCESS.message,
                     data = responseData,
@@ -55,7 +69,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
             )
 
             call.respond(
-                HttpStatusCode.OK, ListResponseWrapper(
+                HttpStatusCode.OK,
+                ListResponseWrapper(
                     code = BoardStatusCode.SUCCESS.code,
                     message = BoardStatusCode.SUCCESS.message,
                     data = responseData,
@@ -73,7 +88,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                 val responseData = boardService.readArticle(articleId)
 
                 call.respond(
-                    HttpStatusCode.OK, OneResponseWrapper(
+                    HttpStatusCode.OK,
+                    OneResponseWrapper(
                         code = BoardStatusCode.SUCCESS.code,
                         message = BoardStatusCode.SUCCESS.message,
                         data = responseData,
@@ -90,7 +106,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                 val responseData = boardService.modifyArticle(articleId, requestDto)
 
                 call.respond(
-                    HttpStatusCode.OK, OneResponseWrapper(
+                    HttpStatusCode.OK,
+                    OneResponseWrapper(
                         code = BoardStatusCode.SUCCESS.code,
                         message = BoardStatusCode.SUCCESS.message,
                         data = responseData,
@@ -106,7 +123,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                 val responseData = boardService.removeArticleBatch(listOf(articleId))
 
                 call.respond(
-                    HttpStatusCode.OK, OneResponseWrapper(
+                    HttpStatusCode.OK,
+                    OneResponseWrapper(
                         code = BoardStatusCode.SUCCESS.code,
                         message = BoardStatusCode.SUCCESS.message,
                         data = responseData,
@@ -124,7 +142,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                     val (responseData, responsePaging) = boardService.listComment(articleId, 0, 0)
 
                     call.respond(
-                        HttpStatusCode.OK, ListResponseWrapper(
+                        HttpStatusCode.OK,
+                        ListResponseWrapper(
                             code = BoardStatusCode.SUCCESS.code,
                             message = BoardStatusCode.SUCCESS.message,
                             data = responseData,
@@ -142,7 +161,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                     val responseData = boardService.writeComment(articleId, requestDto.content)
 
                     call.respond(
-                        HttpStatusCode.OK, OneResponseWrapper(
+                        HttpStatusCode.OK,
+                        OneResponseWrapper(
                             code = BoardStatusCode.SUCCESS.code,
                             message = BoardStatusCode.SUCCESS.message,
                             data = responseData,
@@ -162,7 +182,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                         val responseData = boardService.readComment(articleId, commentId)
 
                         call.respond(
-                            HttpStatusCode.OK, OneResponseWrapper(
+                            HttpStatusCode.OK,
+                            OneResponseWrapper(
                                 code = BoardStatusCode.SUCCESS.code,
                                 message = BoardStatusCode.SUCCESS.message,
                                 data = responseData,
@@ -182,7 +203,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                         val responseData = boardService.modifyComment(articleId, commentId, requestDto.content)
 
                         call.respond(
-                            HttpStatusCode.OK, OneResponseWrapper(
+                            HttpStatusCode.OK,
+                            OneResponseWrapper(
                                 code = BoardStatusCode.SUCCESS.code,
                                 message = BoardStatusCode.SUCCESS.message,
                                 data = responseData,
@@ -202,7 +224,8 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
                         val responseData = boardService.removeCommentBatch(articleId, listOf(commentId))
 
                         call.respond(
-                            HttpStatusCode.OK, OneResponseWrapper(
+                            HttpStatusCode.OK,
+                            OneResponseWrapper(
                                 code = BoardStatusCode.SUCCESS.code,
                                 message = BoardStatusCode.SUCCESS.message,
                                 data = responseData,

@@ -1,15 +1,14 @@
 package me.archmagece.route
 
 import io.ktor.http.*
-import io.ktor.server.testing.*
+import io.ktor.server.testing.setBody
 import me.archmagece.Constants
 import me.archmagece.dto.ArticleWriteRequest
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-
-class TestRouteBoard: TestBase() {
+class TestRouteBoard : TestBase() {
 
     @Test
     fun `Article 생성 - success`() = boardServer {
@@ -37,6 +36,5 @@ class TestRouteBoard: TestBase() {
 
     @Test
     fun `Article 읽기 - success`() = boardServer {
-
     }
 }

@@ -1,8 +1,9 @@
 package me.archmagece.route
 
 import com.google.gson.Gson
-import io.ktor.application.*
-import io.ktor.server.testing.*
+import io.ktor.application.Application
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.withTestApplication
 import me.archmagece.ArticleModel
 import me.archmagece.CommentModel
 import me.archmagece.module

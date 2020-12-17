@@ -4,7 +4,6 @@ import mu.KotlinLogging
 
 val logger = KotlinLogging.logger { }
 
-
 object Constants {
     const val URI_HEALTH = "/health_club"
 

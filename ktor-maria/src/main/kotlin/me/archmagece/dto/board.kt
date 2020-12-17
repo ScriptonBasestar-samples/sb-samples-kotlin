@@ -5,7 +5,6 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
-
 data class ArticleWriteRequest(
     @field:NotNull
     val title: String,
@@ -53,8 +52,8 @@ data class CommentResponse(
     val content: String,
 )
 
-//data class InspectionRequest(
+// data class InspectionRequest(
 //    @field:Size(min = 0, max = 3)
 //    @field:NotNull
 //    val token: String,
-//)
+// )

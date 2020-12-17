@@ -1,6 +1,5 @@
 package me.archmagece.dto
 
-
 data class OneResponseWrapper<T>(
     val code: String,
     val message: String,

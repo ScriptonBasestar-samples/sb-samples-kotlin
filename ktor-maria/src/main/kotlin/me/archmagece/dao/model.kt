@@ -4,7 +4,6 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.jodatime.datetime
 
-
 object ArticleModel : LongIdTable(name = "t_article") {
     val code = varchar("gallery_id", 30)
     val userId = long("user_id")
