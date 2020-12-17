@@ -19,8 +19,8 @@ import me.archmagece.dto.CommentWriteRequest
 import me.archmagece.dto.ListResponseWrapper
 import me.archmagece.dto.OneResponseWrapper
 import me.archmagece.dto.SearchRequest
-import me.archmagece.handler.BoardService
-import me.archmagece.handler.CommonService
+import me.archmagece.handler.BoardHandler
+import me.archmagece.handler.CommonHandler
 
 /**
  * Given values from gateway
@@ -33,7 +33,7 @@ fun gwHeader(call: ApplicationCall): Pair<Long, String> {
     return Pair(userId, userNickname)
 }
 
-fun Route.board(commonService: CommonService, boardService: BoardService) {
+fun Route.board(commonService: CommonHandler, boardService: BoardHandler) {
 
     get(Constants.URI_HEALTH) {
         logger.debug { "API ping" }
@@ -236,20 +236,4 @@ fun Route.board(commonService: CommonService, boardService: BoardService) {
             }
         }
     }
-
-//    route(Constants.URI_COMMENT_BASE) {
-//        get { }
-//        post { }
-//        route("/{id}") {
-//            get { }
-//            put { }
-//            delete { }
-//        }
-//        get("/search") { }
-//        route("/batch") {
-//            get { }
-//            put { }
-//            delete { }
-//        }
-//    }
 }

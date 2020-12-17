@@ -15,7 +15,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
-class BoardService {
+class BoardHandler {
 
     private val logger = KotlinLogging.logger { }
 

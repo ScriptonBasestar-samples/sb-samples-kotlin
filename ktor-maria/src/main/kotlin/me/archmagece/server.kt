@@ -17,8 +17,8 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import me.archmagece.dto.OneResponseWrapper
-import me.archmagece.handler.BoardService
-import me.archmagece.handler.CommonService
+import me.archmagece.handler.BoardHandler
+import me.archmagece.handler.CommonHandler
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -35,9 +35,11 @@ fun initDB(baseConfig: Config) {
     ConfigFactory.load().withFallback(baseConfig).apply {
         val dbType = getString("db_type")
         val config = getConfig(dbType)
-        val hikariConfig = HikariConfig(Properties().apply {
-            config.entrySet().forEach { e -> setProperty(e.key, config.getString(e.key)) }
-        })
+        val hikariConfig = HikariConfig(
+            Properties().apply {
+                config.entrySet().forEach { e -> setProperty(e.key, config.getString(e.key)) }
+            }
+        )
         val ds = HikariDataSource(hikariConfig)
         Database.connect(ds)
     }
@@ -85,8 +87,8 @@ fun Application.module() {
     initDB(initConfig())
     dbMigrate()
 
-    val commonService = CommonService()
-    val boardService = BoardService()
+    val commonService = CommonHandler()
+    val boardService = BoardHandler()
 
     install(Routing) {
         board(commonService, boardService)
@@ -124,7 +126,6 @@ fun Application.module() {
 //        }
     }
 }
-
 
 fun main() {
     System.setProperty("testing", "false")

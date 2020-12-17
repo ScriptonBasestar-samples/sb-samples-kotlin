@@ -104,13 +104,13 @@ dependencies {
     ktlint "com.pinterest:ktlint:0.40.0"
 }
 
-// not support mariadb
 //flyway {
 //    url = System.env.JDBC_URL ?: 'jdbc:h2:mem:test'
 //    user = System.env.DB_USER ?: 'sa'
 //    password = System.env.DB_PASS ?: ''
 //    createSchemas = true
 //}
+
 task ktlint(type: JavaExec, group: "verification") {
     description = "Check Kotlin code style."
     classpath = configurations.ktlint
@@ -135,6 +135,5 @@ task installKtlint(dependsOn: init, group: 'build setup') {
     doLast {
         addKtlintCheckGitPreCommitHook
         addKtlintFormatGitPreCommitHook
-        print('ddddd')
     }
 }
