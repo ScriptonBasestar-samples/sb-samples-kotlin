@@ -5,6 +5,9 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'co.uzzu.dotenv.gradle' version '1.1.0'
     id 'org.flywaydb.flyway' version '7.2.1'
+
+    id "org.jlleitschuh.gradle.ktlint" version "9.4.1"
+    id "org.jlleitschuh.gradle.ktlint-idea" version "9.4.1"
 }
 group = 'me.archmagece'
 version = '1.0-SNAPSHOT'
@@ -20,6 +23,9 @@ kotlin {
     experimental {
         coroutines "enable"
     }
+}
+ktlint {
+    debug = true
 }
 
 application {
