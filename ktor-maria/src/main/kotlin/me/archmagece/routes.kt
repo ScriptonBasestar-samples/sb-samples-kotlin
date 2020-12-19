@@ -21,16 +21,17 @@ import me.archmagece.dto.OneResponseWrapper
 import me.archmagece.dto.SearchRequest
 import me.archmagece.handler.BoardHandler
 import me.archmagece.handler.CommonHandler
+import java.util.UUID
 
 /**
  * Given values from gateway
  */
-fun gwHeader(call: ApplicationCall): Pair<Long, String> {
-    val userId =
-        call.request.header("X-USER-ID")?.toLong() ?: throw IllegalArgumentException("X-USER-ID must be provided")
-    val userNickname =
-        call.request.header("X-USER-NICKNAME") ?: throw IllegalArgumentException("X-USER-NICKNAME must be provided")
-    return Pair(userId, userNickname)
+fun gwHeader(call: ApplicationCall): Pair<UUID, String> {
+    val userUid = UUID.fromString(call.request.header("X-USER-UID"))
+        ?: throw IllegalArgumentException("X-USER-ID must be provided")
+    val userNickname = call.request.header("X-USER-NICKNAME")
+        ?: throw IllegalArgumentException("X-USER-NICKNAME must be provided")
+    return Pair(userUid, userNickname)
 }
 
 fun Route.board(commonService: CommonHandler, boardService: BoardHandler) {
@@ -39,126 +40,64 @@ fun Route.board(commonService: CommonHandler, boardService: BoardHandler) {
         logger.debug { "API ping" }
         call.respond(hashMapOf("healthy" to commonService.ping()))
     }
-    route(Constants.URI_BOARD_BASE) {
-        post {
-            // create
-            val (userId, userNickname) = gwHeader(call)
-//            val requestDto = call.receive<ArticleWriteRequest>()
-            val requestDto = call.receive(ArticleWriteRequest::class)
-
-            val responseData = boardService.writeArticle(requestDto)
-
-            call.respond(
-                HttpStatusCode.Created,
-                OneResponseWrapper(
-                    code = BoardStatusCode.SUCCESS.code,
-                    message = BoardStatusCode.SUCCESS.message,
-                    data = responseData,
+    route(Constants.URI_BOARD) {
+        route("/{galleryUid}") {
+            post {
+                // create
+                val (userUid, userNickname) = gwHeader(call)
+                val galleryUid: UUID = UUID.fromString(call.parameters["galleryUid"]) ?: throw BoardStatusException(
+                    BoardStatusCode.PARAM_MUST_PROVIDED
                 )
-            )
-        }
-        get {
-            // list
-            val (userId, userNickname) = gwHeader(call)
-            val requestDto = call.receive(SearchRequest::class)
+                // val requestDto = call.receive<ArticleWriteRequest>()
+                val requestDto = call.receive(ArticleWriteRequest::class)
 
-            val (responseData, responsePaging) = boardService.listArticle(
-                requestDto.keyword,
-                requestDto.pageNo,
-                requestDto.pageSize
-            )
+                val responseData = boardService.writeArticle(galleryUid, userUid, userNickname, requestDto)
 
-            call.respond(
-                HttpStatusCode.OK,
-                ListResponseWrapper(
-                    code = BoardStatusCode.SUCCESS.code,
-                    message = BoardStatusCode.SUCCESS.message,
-                    data = responseData,
-                    page = responsePaging,
+                call.respond(
+                    HttpStatusCode.Created,
+                    OneResponseWrapper(
+                        code = BoardStatusCode.SUCCESS.code,
+                        message = BoardStatusCode.SUCCESS.message,
+                        data = responseData,
+                    )
                 )
-            )
-        }
-        route("/{articleId}") {
+            }
             get {
-                val (userId, userNickname) = gwHeader(call)
-                val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                    BoardStatusCode.ARTICLE_NOT_FOUND
+                // list
+                val (userUid, userNickname) = gwHeader(call)
+                val galleryUid: UUID = UUID.fromString(call.parameters["galleryUid"]) ?: throw BoardStatusException(
+                    BoardStatusCode.PARAM_MUST_PROVIDED
                 )
+                val requestDto = call.receive(SearchRequest::class)
 
-                val responseData = boardService.readArticle(articleId)
+                val (responseData, responsePaging) = boardService.listArticle(
+                    galleryUid,
+                    requestDto.keyword,
+                    requestDto.pageNo,
+                    requestDto.pageSize
+                )
 
                 call.respond(
                     HttpStatusCode.OK,
-                    OneResponseWrapper(
+                    ListResponseWrapper(
                         code = BoardStatusCode.SUCCESS.code,
                         message = BoardStatusCode.SUCCESS.message,
                         data = responseData,
+                        page = responsePaging,
                     )
                 )
             }
-            put {
-                val (userId, userNickname) = gwHeader(call)
-                val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                    BoardStatusCode.ARTICLE_NOT_FOUND
-                )
-                val requestDto = call.receive(ArticleModifyRequest::class)
-
-                val responseData = boardService.modifyArticle(articleId, requestDto)
-
-                call.respond(
-                    HttpStatusCode.OK,
-                    OneResponseWrapper(
-                        code = BoardStatusCode.SUCCESS.code,
-                        message = BoardStatusCode.SUCCESS.message,
-                        data = responseData,
-                    )
-                )
-            }
-            delete {
-                val (userId, userNickname) = gwHeader(call)
-                val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                    BoardStatusCode.ARTICLE_NOT_FOUND
-                )
-
-                val responseData = boardService.removeArticleBatch(listOf(articleId))
-
-                call.respond(
-                    HttpStatusCode.OK,
-                    OneResponseWrapper(
-                        code = BoardStatusCode.SUCCESS.code,
-                        message = BoardStatusCode.SUCCESS.message,
-                        data = responseData,
-                    )
-                )
-            }
-
-            route(Constants.URI_COMMENT_BASE) {
+            route("/{articleUid}") {
                 get {
-                    val (userId, userNickname) = gwHeader(call)
-                    val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
+                    val (userUid, userNickname) = gwHeader(call)
+                    val galleryUid: UUID = UUID.fromString(call.parameters["galleryUid"]) ?: throw BoardStatusException(
+                        BoardStatusCode.PARAM_MUST_PROVIDED
+                    )
+                    val articleUid: UUID = UUID.fromString(call.parameters["articleUid"]) ?: throw BoardStatusException(
                         BoardStatusCode.ARTICLE_NOT_FOUND
                     )
 
-                    val (responseData, responsePaging) = boardService.listComment(articleId, 0, 0)
-
-                    call.respond(
-                        HttpStatusCode.OK,
-                        ListResponseWrapper(
-                            code = BoardStatusCode.SUCCESS.code,
-                            message = BoardStatusCode.SUCCESS.message,
-                            data = responseData,
-                            page = responsePaging,
-                        )
-                    )
-                }
-                post {
-                    val (userId, userNickname) = gwHeader(call)
-                    val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                        BoardStatusCode.ARTICLE_NOT_FOUND
-                    )
-                    val requestDto = call.receive(CommentWriteRequest::class)
-
-                    val responseData = boardService.writeComment(articleId, requestDto.content)
+                    val responseData = boardService.readArticle(galleryUid, userUid, articleUid)
 
                     call.respond(
                         HttpStatusCode.OK,
@@ -169,17 +108,51 @@ fun Route.board(commonService: CommonHandler, boardService: BoardHandler) {
                         )
                     )
                 }
-                route("/{commentId}") {
+                put {
+                    val (userUid, userNickname) = gwHeader(call)
+                    val articleUid: UUID = UUID.fromString(call.parameters["articleUid"]) ?: throw BoardStatusException(
+                        BoardStatusCode.ARTICLE_NOT_FOUND
+                    )
+                    val requestDto = call.receive(ArticleModifyRequest::class)
+
+                    val responseData = boardService.modifyArticle(articleUid, requestDto)
+
+                    call.respond(
+                        HttpStatusCode.OK,
+                        OneResponseWrapper(
+                            code = BoardStatusCode.SUCCESS.code,
+                            message = BoardStatusCode.SUCCESS.message,
+                            data = responseData,
+                        )
+                    )
+                }
+                delete {
+                    val (userUid, userNickname) = gwHeader(call)
+                    val articleUid: UUID = UUID.fromString(call.parameters["articleUid"]) ?: throw BoardStatusException(
+                        BoardStatusCode.ARTICLE_NOT_FOUND
+                    )
+
+                    val responseData = boardService.removeArticleBatch(listOf(articleUid))
+
+                    call.respond(
+                        HttpStatusCode.OK,
+                        OneResponseWrapper(
+                            code = BoardStatusCode.SUCCESS.code,
+                            message = BoardStatusCode.SUCCESS.message,
+                            data = responseData,
+                        )
+                    )
+                }
+
+                route("/{commentUid}") {
                     get {
-                        val (userId, userNickname) = gwHeader(call)
-                        val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                            BoardStatusCode.ARTICLE_NOT_FOUND
-                        )
-                        val commentId: Long = call.parameters["commentId"]?.toLong() ?: throw BoardStatusException(
-                            BoardStatusCode.ARTICLE_NOT_FOUND
-                        )
+                        val (userUid, userNickname) = gwHeader(call)
+                        val articleUid: UUID = UUID.fromString(call.parameters["articleUid"])
+                            ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                        val commentUid: UUID = UUID.fromString(call.parameters["commentUid"])
+                            ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
 
-                        val responseData = boardService.readComment(articleId, commentId)
+                        val (responseData, responsePaging) = boardService.listComment(articleUid)
 
                         call.respond(
                             HttpStatusCode.OK,
@@ -190,17 +163,13 @@ fun Route.board(commonService: CommonHandler, boardService: BoardHandler) {
                             )
                         )
                     }
-                    put {
-                        val (userId, userNickname) = gwHeader(call)
-                        val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                            BoardStatusCode.ARTICLE_NOT_FOUND
-                        )
-                        val commentId: Long = call.parameters["commentId"]?.toLong() ?: throw BoardStatusException(
-                            BoardStatusCode.ARTICLE_NOT_FOUND
-                        )
-                        val requestDto = call.receive(CommentModifyRequest::class)
+                    post {
+                        val (userUid, userNickname) = gwHeader(call)
+                        val articleUid: UUID = UUID.fromString(call.parameters["articleUid"])
+                            ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                        val requestDto = call.receive(CommentWriteRequest::class)
 
-                        val responseData = boardService.modifyComment(articleId, commentId, requestDto.content)
+                        val responseData = boardService.writeComment(articleUid, requestDto.content)
 
                         call.respond(
                             HttpStatusCode.OK,
@@ -211,26 +180,63 @@ fun Route.board(commonService: CommonHandler, boardService: BoardHandler) {
                             )
                         )
                     }
-                    delete {
-                        val (userId, userNickname) = gwHeader(call)
-                        val articleId: Long = call.parameters["articleId"]?.toLong() ?: throw BoardStatusException(
-                            BoardStatusCode.ARTICLE_NOT_FOUND
-                        )
-                        val commentId: Long = call.parameters["commentId"]?.toLong() ?: throw BoardStatusException(
-                            BoardStatusCode.ARTICLE_NOT_FOUND
-                        )
-                        val requestDto = call.receive(CommentModifyRequest::class)
+                    route("/{commentId}") {
+                        get {
+                            val (userUid, userNickname) = gwHeader(call)
+                            val articleUid: UUID = UUID.fromString(call.parameters["articleUid"])
+                                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                            val commentUid: UUID = UUID.fromString(call.parameters["commentUid"])
+                                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
 
-                        val responseData = boardService.removeCommentBatch(articleId, listOf(commentId))
+                            val responseData = boardService.readComment(articleUid, commentUid)
 
-                        call.respond(
-                            HttpStatusCode.OK,
-                            OneResponseWrapper(
-                                code = BoardStatusCode.SUCCESS.code,
-                                message = BoardStatusCode.SUCCESS.message,
-                                data = responseData,
+                            call.respond(
+                                HttpStatusCode.OK,
+                                OneResponseWrapper(
+                                    code = BoardStatusCode.SUCCESS.code,
+                                    message = BoardStatusCode.SUCCESS.message,
+                                    data = responseData,
+                                )
                             )
-                        )
+                        }
+                        put {
+                            val (userUid, userNickname) = gwHeader(call)
+                            val articleUid: UUID = UUID.fromString(call.parameters["articleUid"])
+                                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                            val commentUid: UUID = UUID.fromString(call.parameters["commentUid"])
+                                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                            val requestDto = call.receive(CommentModifyRequest::class)
+
+                            val responseData = boardService.modifyComment(articleUid, commentUid, requestDto.content)
+
+                            call.respond(
+                                HttpStatusCode.OK,
+                                OneResponseWrapper(
+                                    code = BoardStatusCode.SUCCESS.code,
+                                    message = BoardStatusCode.SUCCESS.message,
+                                    data = responseData,
+                                )
+                            )
+                        }
+                        delete {
+                            val (userUid, userNickname) = gwHeader(call)
+                            val articleUid: UUID = UUID.fromString(call.parameters["articleUid"])
+                                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                            val commentUid: UUID = UUID.fromString(call.parameters["commentUid"])
+                                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+                            val requestDto = call.receive(CommentModifyRequest::class)
+
+                            val responseData = boardService.removeCommentBatch(articleUid, listOf(commentUid))
+
+                            call.respond(
+                                HttpStatusCode.OK,
+                                OneResponseWrapper(
+                                    code = BoardStatusCode.SUCCESS.code,
+                                    message = BoardStatusCode.SUCCESS.message,
+                                    data = responseData,
+                                )
+                            )
+                        }
                     }
                 }
             }

@@ -1,12 +1,18 @@
 package me.archmagece.handler
 
-import me.archmagece.ArticleModel
 import me.archmagece.BoardStatusCode
 import me.archmagece.BoardStatusException
-import me.archmagece.CommentModel
-import me.archmagece.dao.ArticleEntity
-import me.archmagece.dao.CommentEntity
-import me.archmagece.dto.*
+import me.archmagece.dto.ArticleDetailResponse
+import me.archmagece.dto.ArticleModifyRequest
+import me.archmagece.dto.ArticleSummaryResponse
+import me.archmagece.dto.ArticleWriteRequest
+import me.archmagece.dto.CommentResponse
+import me.archmagece.dto.PageResponse
+import me.archmagece.dto.UUIDResponseDto
+import me.archmagece.model.ArticleEntity
+import me.archmagece.model.ArticleTable
+import me.archmagece.model.CommentEntity
+import me.archmagece.model.CommentTable
 import mu.KotlinLogging
 import org.jetbrains.exposed.dao.load
 import org.jetbrains.exposed.sql.deleteWhere
@@ -14,26 +20,43 @@ import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.util.UUID
 
 class BoardHandler {
 
     private val logger = KotlinLogging.logger { }
 
-    fun writeArticle(requestDto: ArticleWriteRequest): LongIdResponseDto =
+    fun writeArticle(
+        galleryUid: UUID,
+        userUid: UUID,
+        userNickname: String,
+        requestDto: ArticleWriteRequest
+    ): UUIDResponseDto =
         transaction {
 //            addLogger(StdOutSqlLogger)
             logger.trace { "writeOne requestDto: $requestDto" }
-            val id = ArticleModel.insertAndGetId {
-                it[title] = requestDto.title
-                it[content] = requestDto.content
+            val id = ArticleTable.insertAndGetId {
+                it[ArticleTable.galleryUid] = galleryUid
+
+                it[ArticleTable.userUid] = userUid
+                it[ArticleTable.userNickname] = userNickname
+
+                it[ArticleTable.title] = requestDto.title
+                it[ArticleTable.content] = requestDto.content
+                it[ArticleTable.formatType] = requestDto.formatType
             }
-            LongIdResponseDto(id.value)
+            UUIDResponseDto(id.value)
         }
 
-    fun readArticle(id: Long): ArticleDetailResponse =
+    fun readArticle(galleryUid: UUID, userUid: UUID, articleUid: UUID): ArticleDetailResponse =
         transaction {
-            logger.trace { "readOne id: $id" }
-            val result = ArticleEntity.findById(id)?.load(ArticleEntity::comments) ?: throw BoardStatusException(
+            logger.trace { "readOne - galleryUid: $galleryUid, userUid: $userUid, articleUid: $articleUid" }
+            // TODO auth
+            val result = ArticleEntity.find {
+                ArticleTable.galleryUid.eq(galleryUid)
+                ArticleTable.userUid.eq(userUid)
+                ArticleTable.id.eq(articleUid)
+            }.lastOrNull()?.load(ArticleEntity::comments) ?: throw BoardStatusException(
                 BoardStatusCode.ARTICLE_NOT_FOUND
             )
 
@@ -50,36 +73,43 @@ class BoardHandler {
             )
         }
 
-    fun modifyArticle(id: Long, requestDto: ArticleModifyRequest): LongIdResponseDto =
+    fun modifyArticle(articleUid: UUID, requestDto: ArticleModifyRequest): UUIDResponseDto =
         transaction {
-            logger.trace { "modifyOne id: $id, requestDto: $requestDto" }
+            logger.trace { "modifyOne articleUid: $articleUid, requestDto: $requestDto" }
 
-            val entity = ArticleEntity.findById(id) ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
+            val entity = ArticleEntity.findById(articleUid)
+                ?: throw BoardStatusException(BoardStatusCode.ARTICLE_NOT_FOUND)
             requestDto.title?.let {
                 entity.title = it
             }
             requestDto.content?.let {
                 entity.content = it
             }
-            LongIdResponseDto(entity.id.value)
+            UUIDResponseDto(entity.id.value)
         }
 
-    fun removeArticleBatch(ids: List<Long>): Int =
+    fun removeArticleBatch(uids: List<UUID>): Int =
         transaction {
-            logger.trace { "remove ids: $ids" }
+            logger.trace { "remove ids: $uids" }
 
-            val numberOfDeletedItems = ArticleModel.deleteWhere {
-                ArticleModel.id.inList(ids)
+            val numberOfDeletedItems = ArticleTable.deleteWhere {
+                ArticleTable.id.inList(uids)
             }
             numberOfDeletedItems
         }
 
-    fun listArticle(keyword: String, pageNo: Long, pageSize: Long): Pair<List<ArticleSummaryResponse>, PageResponse> =
+    fun listArticle(
+        galleryUid: UUID,
+        keyword: String,
+        pageNo: Long,
+        pageSize: Long
+    ): Pair<List<ArticleSummaryResponse>, PageResponse> =
         transaction {
             logger.trace { "readList: $keyword, $pageNo, $pageSize" }
 
             val query = ArticleEntity.find {
-                ArticleModel.content.like(keyword)
+                ArticleTable.galleryUid.eq(galleryUid)
+                ArticleTable.content.like(keyword)
             }
             val items = query.map {
                 ArticleSummaryResponse(
@@ -94,39 +124,39 @@ class BoardHandler {
             Pair(items, pageResponse)
         }
 
-    fun listComment(articleId: Long, pageNo: Long, pageSize: Long): Pair<List<CommentResponse>, PageResponse> =
+    fun listComment(articleUid: UUID): List<CommentResponse> =
         transaction {
-            logger.trace { "listComment: articleId: $articleId" }
-            val query = CommentModel.select {
-                CommentModel.article eq articleId
+            logger.trace { "listComment: articleUid: $articleUid" }
+            val query = CommentTable.select {
+                CommentTable.article eq articleUid
             }
             val items = query.map {
                 CommentResponse(
-                    id = it[CommentModel.id].value,
-                    content = it[CommentModel.content],
+                    id = it[CommentTable.id].value,
+                    content = it[CommentTable.content],
                 )
             }
 
-            val totalRows = query.count()
-            val pageResponse = PageResponse.fromParam(pageNo, pageSize, totalRows)
-            Pair(items, pageResponse)
+            items
+            // val totalRows = query.count()
+            // val pageResponse = PageResponse.fromParam(pageNo, pageSize, totalRows)
+            // Pair(items, pageResponse)
         }
 
-    fun writeComment(articleId: Long, content: String) = transaction {
-        logger.trace { "writeComment: articleId: $articleId, content: $content" }
-        val id = CommentModel.insertAndGetId {
-            it[CommentModel.article] = articleId
-            it[CommentModel.content] = content
+    fun writeComment(articleUid: UUID, content: String) = transaction {
+        logger.trace { "writeComment: articleUid: $articleUid, content: $content" }
+        val id = CommentTable.insertAndGetId {
+            it[CommentTable.article] = articleUid
+            it[CommentTable.content] = content
         }
         id
     }
 
-
-    fun readComment(articleId: Long, contentId: Long) = transaction {
-        logger.trace { "readComment articleId: $articleId, contentId: $contentId" }
+    fun readComment(articleUid: UUID, commentUid: UUID) = transaction {
+        logger.trace { "readComment articleId: $articleUid, commentUid: $commentUid" }
         val query = CommentEntity.find {
-            CommentModel.article.eq(articleId)
-            CommentModel.id.eq(contentId)
+            CommentTable.article.eq(articleUid)
+            CommentTable.id.eq(articleUid)
         }
 
         Pair(
@@ -140,21 +170,21 @@ class BoardHandler {
         )
     }
 
-    fun modifyComment(articleId: Long, commentId: Long, content: String) = transaction {
-        logger.trace { "modifyComment articleId: $articleId, commentId: $commentId, content: $content" }
-        CommentModel.update({
-            CommentModel.article eq articleId
-            CommentModel.id eq commentId
+    fun modifyComment(articleUid: UUID, commentUid: UUID, content: String) = transaction {
+        logger.trace { "modifyComment articleUid: $articleUid, commentUid: $commentUid, content: $content" }
+        CommentTable.update({
+            CommentTable.article eq articleUid
+            CommentTable.id eq commentUid
         }) {
-            it[CommentModel.content] = content
+            it[CommentTable.content] = content
         }
     }
 
-    fun removeCommentBatch(articleId: Long, commentIds: List<Long>) = transaction {
-        logger.trace { "removeComment articleId: $articleId, commentIds: $commentIds" }
-        val numberOfDeletedItems = CommentModel.deleteWhere {
-            CommentModel.article eq articleId
-            CommentModel.id.inList(commentIds)
+    fun removeCommentBatch(articleUid: UUID, commentIds: List<UUID>) = transaction {
+        logger.trace { "removeComment articleUid: $articleUid, commentIds: $commentIds" }
+        val numberOfDeletedItems = CommentTable.deleteWhere {
+            CommentTable.article eq articleUid
+            CommentTable.id.inList(commentIds)
         }
         numberOfDeletedItems
     }

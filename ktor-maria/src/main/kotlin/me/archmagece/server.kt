@@ -19,6 +19,8 @@ import io.ktor.server.netty.*
 import me.archmagece.dto.OneResponseWrapper
 import me.archmagece.handler.BoardHandler
 import me.archmagece.handler.CommonHandler
+import me.archmagece.model.ArticleTable
+import me.archmagece.model.CommentTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -49,7 +51,7 @@ fun dbMigrate() {
     // FIXME cli로 이동 할 필요
 //    DBMigration.migrate()
     transaction {
-        SchemaUtils.create(ArticleModel, CommentModel)
+        SchemaUtils.create(ArticleTable, CommentTable)
     }
 }
 

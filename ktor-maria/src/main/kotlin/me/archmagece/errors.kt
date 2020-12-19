@@ -11,8 +11,9 @@ enum class BoardStatusCode(val code: String, val message: String) {
     REQ_PATH_VARIABLE_NOT_FOUND("R-01", "path variable 필수"),
 
     // article
-    ARTICLE_DUPLICATE("G-01", "중복된 제목이 있습니다"),
-    ARTICLE_NOT_FOUND("G-02", "값이 없습니다"),
+    PARAM_MUST_PROVIDED("G-01", "중복된 제목이 있습니다"),
+    ARTICLE_DUPLICATE("G-02", "중복된 제목이 있습니다"),
+    ARTICLE_NOT_FOUND("G-03", "값이 없습니다"),
 
     FAIL("E-01", "fail"),
 

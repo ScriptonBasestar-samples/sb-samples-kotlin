@@ -16,7 +16,7 @@ class TestRouteBoard : TestBase() {
         val userId = 1
         handleRequest {
             method = HttpMethod.Post
-            uri = Constants.URI_BOARD_BASE
+            uri = Constants.URI_BOARD
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             addHeader("X-ROOM-ID", roomId)
             addHeader("X-USER-ID", userId.toString())
@@ -24,7 +24,8 @@ class TestRouteBoard : TestBase() {
                 gson.toJson(
                     ArticleWriteRequest(
                         title = "title1",
-                        content = "content1"
+                        content = "content1",
+                        formatType = "md",
                     )
                 )
             )

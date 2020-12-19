@@ -1,6 +1,7 @@
 package me.archmagece.dto
 
 import org.hibernate.validator.constraints.Length
+import java.util.UUID
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -10,6 +11,8 @@ data class ArticleWriteRequest(
     val title: String,
     @field:NotNull
     val content: String,
+    @field:NotNull
+    val formatType: String
 )
 
 data class ArticleModifyRequest(
@@ -18,18 +21,20 @@ data class ArticleModifyRequest(
     var title: String?,
     @field:NotEmpty
     @field:Length(min = 2)
-    var content: String?
+    var content: String?,
+    @field:NotNull
+    val formatType: String?
 )
 
 data class ArticleDetailResponse(
-    val id: Long,
+    val id: UUID,
     val title: String,
     val content: String,
     val comments: List<CommentResponse>,
 )
 
 data class ArticleSummaryResponse(
-    val id: Long,
+    val id: UUID,
     val title: String,
     val content: String,
 )
@@ -48,7 +53,7 @@ data class CommentModifyRequest(
 
 data class CommentResponse(
 //    val articleId: Long,
-    val id: Long,
+    val id: UUID,
     val content: String,
 )
 

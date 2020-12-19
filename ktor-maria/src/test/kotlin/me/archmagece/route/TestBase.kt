@@ -4,8 +4,8 @@ import com.google.gson.Gson
 import io.ktor.application.Application
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.withTestApplication
-import me.archmagece.ArticleModel
-import me.archmagece.CommentModel
+import me.archmagece.model.ArticleTable
+import me.archmagece.model.CommentTable
 import me.archmagece.module
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -22,7 +22,7 @@ open class TestBase {
         withTestApplication(Application::module) {
             transaction {
                 SchemaUtils.dropDatabase()
-                SchemaUtils.create(ArticleModel, CommentModel)
+                SchemaUtils.create(ArticleTable, CommentTable)
             }
             callback()
         }
