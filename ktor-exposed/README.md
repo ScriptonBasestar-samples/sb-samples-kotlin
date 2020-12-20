@@ -26,14 +26,44 @@ Sample web application using
 
 ## Test
 
-### UnitTest - mock test
+### ManualTest
 
-* h2 memory database
+단순 기능 동작 테스트
 
-### UnitTest - real test
+#### CheckTest
 
-* docker database
+* 외부 API
 
-### IntegrationTest - CI/CD
+### Unit Test
 
-not supported
+개발, 빌드시 자동화 테스트
+
+#### mock test
+
+* dao(model) test - (dao - h2 memory db)
+* service(handler) test - (service - dao - h2 memory db)
+* controller(http, router) test - (http - controller - mock service)
+* api test - (http - controller - service - model - )
+
+#### integration test
+
+* http test - docker mariadb
+
+### IntegrationTest(CI/CD)
+
+운영 배포시 테스트
+
+#### FunctionTest
+
+* following to test scenario
+
+#### LoadTest
+
+* staging cluster
+* dev cluster
+* jmeter
+
+#### Health Check
+
+* 컨테이너 단위
+* 전체 응답
