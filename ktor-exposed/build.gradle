@@ -35,6 +35,40 @@ application {
     mainClassName = 'ServerKt'
 }
 
+//sourceSets {
+////    main {
+////        java {
+////            srcDir 'src/main/java'
+////        }
+////        kotlin {
+////            srcDir 'src/main/kotlin'
+////        }
+////    }
+//    checkTest {
+//        java {
+//            srcDir 'src/checktest/kotlin'
+//        }
+//    }
+//    unitTest {
+//        java {
+//            srcDir 'src/unittest/kotlin'
+//        }
+//        resources {
+//            srcDir 'src/unittest/resources'
+//        }
+//        compileClasspath += sourceSets.main.runtimeClasspath
+//    }
+//    integrationTest {
+//        java {
+//            srcDir 'src/integrationtest/kotlin'
+//        }
+//        resources {
+//            srcDir 'src/integrationtest/resources'
+//        }
+//        compileClasspath += sourceSets.main.runtimeClasspath
+//    }
+//}
+
 repositories {
     mavenCentral()
     jcenter()

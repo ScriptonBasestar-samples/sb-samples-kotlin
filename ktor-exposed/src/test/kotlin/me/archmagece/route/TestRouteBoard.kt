@@ -5,6 +5,7 @@ import io.ktor.server.testing.setBody
 import me.archmagece.Constants
 import me.archmagece.dto.ArticleWriteRequest
 import org.junit.Test
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -13,13 +14,14 @@ class TestRouteBoard : TestBase() {
     @Test
     fun `Article 생성 - success`() = boardServer {
         val roomId = "R_ABC"
-        val userId = 1
+        val userId = UUID.randomUUID().toString()
+        val userNickname = "nickname1"
         handleRequest {
             method = HttpMethod.Post
-            uri = Constants.URI_BOARD
+            uri = "${Constants.URI_BOARD}/${UUID.randomUUID().toString()}"
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            addHeader("X-ROOM-ID", roomId)
-            addHeader("X-USER-ID", userId.toString())
+            addHeader("X-USER-UID", userId)
+            addHeader("X-USER-NICKNAME", userNickname)
             setBody(
                 gson.toJson(
                     ArticleWriteRequest(

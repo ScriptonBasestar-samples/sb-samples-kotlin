@@ -28,7 +28,7 @@ import java.util.UUID
  */
 fun gwHeader(call: ApplicationCall): Pair<UUID, String> {
     val userUid = UUID.fromString(call.request.header("X-USER-UID"))
-        ?: throw IllegalArgumentException("X-USER-ID must be provided")
+        ?: throw IllegalArgumentException("X-USER-UID must be provided")
     val userNickname = call.request.header("X-USER-NICKNAME")
         ?: throw IllegalArgumentException("X-USER-NICKNAME must be provided")
     return Pair(userUid, userNickname)
