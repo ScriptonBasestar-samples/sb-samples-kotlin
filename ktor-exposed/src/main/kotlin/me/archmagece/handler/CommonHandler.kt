@@ -14,5 +14,4 @@ class CommonHandler {
             it.next(); it.getString(1)
         }.equals("1")
     }
-
 }

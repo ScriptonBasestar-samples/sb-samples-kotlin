@@ -15,7 +15,7 @@ object DBMigration {
             config.getString("password"),
         )
         flyway.setSchemas("t_article", "t_comment")
-        flyway.setLocations("db/migration/$dbType")
+        flyway.setLocations("db/me.archmagece.migration/$dbType")
         flyway.migrate()
     }
 }

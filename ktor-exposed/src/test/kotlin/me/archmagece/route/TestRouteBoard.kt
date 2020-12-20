@@ -18,7 +18,7 @@ class TestRouteBoard : TestBase() {
         val userNickname = "nickname1"
         handleRequest {
             method = HttpMethod.Post
-            uri = "${Constants.URI_BOARD}/${UUID.randomUUID().toString()}"
+            uri = "${Constants.URI_BOARD}/${UUID.randomUUID()}"
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             addHeader("X-USER-UID", userId)
             addHeader("X-USER-NICKNAME", userNickname)

@@ -7,8 +7,8 @@ WORKDIR /src
 # FIXME testcontainer inside docker
 RUN ./gradlew --no-daemon clean build -x test shadowJar
 
-# TODO migration
-#RUN ./gradlew --no-daemon flyway db migration
+# TODO me.archmagece.migration
+#RUN ./gradlew --no-daemon flyway db me.archmagece.migration
 
 
 FROM openjdk:${VERSION}-jre

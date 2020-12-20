@@ -27,9 +27,9 @@ kotlin {
 ktlint {
     debug = true
 }
-configurations {
-    ktlint
-}
+//configurations {
+//    ktlint
+//}
 
 application {
     mainClassName = 'ServerKt'
@@ -93,7 +93,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:3.4.5'
     // data
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.0'
-    // data, migration
+    // data, me.archmagece.migration
     implementation 'org.flywaydb:flyway-core:5.1.4'
 //    implementation 'org.liquibase:liquibase-core:4.2.1'
 
@@ -135,7 +135,7 @@ dependencies {
     implementation "org.jetbrains.exposed:exposed-money:$exposed_version"
     implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"
 
-    ktlint "com.pinterest:ktlint:0.40.0"
+    ktlint 'com.pinterest:ktlint:0.40.0'
 }
 
 //flyway {
@@ -145,25 +145,6 @@ dependencies {
 //    createSchemas = true
 //}
 
-task ktlint(type: JavaExec, group: "verification") {
-    description = "Check Kotlin code style."
-    classpath = configurations.ktlint
-    main = "com.pinterest.ktlint.Main"
-    args "src/**/*.kt"
-    // to generate report in checkstyle format prepend following args:
-    // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
-    // to add a baseline to check against prepend following args:
-    // "--baseline=ktlint-baseline.xml"
-    // see https://github.com/pinterest/ktlint#usage for more
-}
-check.dependsOn ktlint
-
-//task ktlintFormat(type: JavaExec, group: "formatting") {
-//    description = "Fix Kotlin code style deviations."
-//    classpath = configurations.ktlint
-//    main = "com.pinterest.ktlint.Main"
-//    args "-F", "src/**/*.kt"
-//}
 
 task installKtlint(dependsOn: init, group: 'build setup') {
     doLast {
