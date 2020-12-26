@@ -7,10 +7,10 @@ import java.util.UUID
 
 class ArticleEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<ArticleEntity>(ArticleTable)
-    val galleryUid by ArticleTable.galleryUid
-    val userUid by ArticleTable.userUid
+    var galleryUid by ArticleTable.galleryUid
+    var userUid by ArticleTable.userUid
 
-    val userNickname by ArticleTable.userNickname
+    var userNickname by ArticleTable.userNickname
 
     var title by ArticleTable.title
     var content by ArticleTable.content
@@ -24,10 +24,10 @@ class ArticleEntity(id: EntityID<UUID>) : UUIDEntity(id) {
 
 class CommentEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<CommentEntity>(CommentTable)
-    val galleryUid by CommentTable.galleryUid
-    val userUid by CommentTable.userUid
+    var galleryUid by CommentTable.galleryUid
+    var userUid by CommentTable.userUid
 
-    val userNickname by CommentTable.userNickname
+    var userNickname by CommentTable.userNickname
 
     var article by ArticleEntity referencedOn CommentTable.article
 

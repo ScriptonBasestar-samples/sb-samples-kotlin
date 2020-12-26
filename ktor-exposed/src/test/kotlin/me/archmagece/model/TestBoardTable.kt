@@ -22,8 +22,8 @@ class TestBoardTable {
     @BeforeTest
     fun before() {
         System.setProperty("testing", "true")
-        System.setProperty("db_type", "h2")
-        val dbType = ConfigFactory.load().getString("db_type")
+        System.setProperty("dbType", "h2")
+        val dbType = ConfigFactory.load().getString("dbType")
         val config = ConfigFactory.load().getConfig(dbType)
         val properties = Properties()
         config.entrySet().forEach { e -> properties.setProperty(e.key, config.getString(e.key)) }

@@ -8,7 +8,7 @@ class CommonHandler {
 
     private val logger = KotlinLogging.logger { }
 
-    fun ping() = transaction {
+    fun ping(): Boolean = transaction {
         logger.trace { "board service.ping ping" }
         TransactionManager.current().exec("select 1;") {
             it.next(); it.getString(1)

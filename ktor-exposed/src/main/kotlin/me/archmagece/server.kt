@@ -6,36 +6,43 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.gson.*
-import io.ktor.http.*
-import io.ktor.metrics.dropwizard.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.application.log
+import io.ktor.features.CallLogging
+import io.ktor.features.Compression
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.StatusPages
+import io.ktor.gson.gson
+import io.ktor.http.HttpStatusCode
+import io.ktor.metrics.dropwizard.DropwizardMetrics
+import io.ktor.request.path
+import io.ktor.response.respond
+import io.ktor.routing.Routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import me.archmagece.dto.OneResponseWrapper
 import me.archmagece.handler.BoardHandler
 import me.archmagece.handler.CommonHandler
 import me.archmagece.model.ArticleTable
 import me.archmagece.model.CommentTable
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import org.slf4j.event.Level
 import java.lang.reflect.Modifier
 import java.text.DateFormat
-import java.util.*
+import java.util.Properties
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 fun initConfig() = ConfigFactory.defaultApplication() ?: throw NullPointerException("init error on server.kt")
 
 fun initDB(baseConfig: Config) {
     ConfigFactory.load().withFallback(baseConfig).apply {
-        val dbType = getString("db_type")
+        val dbType = getString("dbType")
         val config = getConfig(dbType)
         val hikariConfig = HikariConfig(
             Properties().apply {
@@ -47,12 +54,24 @@ fun initDB(baseConfig: Config) {
     }
 }
 
-fun dbMigrate() {
-    // FIXME cli로 이동 할 필요
-//    DBMigration.migrate()
-    transaction {
-        SchemaUtils.create(ArticleTable, CommentTable)
+fun dbMigrate(baseConfig: Config) {
+    ConfigFactory.load().withFallback(baseConfig).apply {
+        val flyway = Flyway()
+        val dbType = getString("dbType")
+        val config = getConfig(dbType)
+
+        flyway.setDataSource(
+            config.getString("jdbcUrl"),
+            config.getString("username"),
+            config.getString("password"),
+        )
+        flyway.setSchemas(ArticleTable.tableName, CommentTable.tableName)
+        flyway.setLocations("db/migration/$dbType")
+        flyway.migrate()
     }
+    // transaction {
+    //     SchemaUtils.create(ArticleTable, CommentTable)
+    // }
 }
 
 val serializer: JsonSerializer<DateTime> = JsonSerializer { src, _, context ->
@@ -86,8 +105,9 @@ fun Application.module() {
             .start(10, TimeUnit.SECONDS)
     }
 
-    initDB(initConfig())
-    dbMigrate()
+    val config = initConfig()
+    initDB(config)
+    dbMigrate(config)
 
     val commonService = CommonHandler()
     val boardService = BoardHandler()
@@ -106,7 +126,6 @@ fun Application.module() {
                 )
             )
         }
-        // 문법체크
         exception<BoardStatusException> { cause ->
             call.respond(
                 HttpStatusCode.OK,
@@ -117,20 +136,11 @@ fun Application.module() {
                 )
             )
         }
-//        exception<BoardStatusException> { cause ->
-//            call.respond(HttpStatusCode.OK) {
-//                me.archmagece.ResponseWrapper(
-//                    code = cause.statusCode.code,
-//                    message = cause.statusCode.message,
-//                    data = ""
-//                )
-//            }
-//        }
     }
 }
 
 fun main() {
     System.setProperty("testing", "false")
-//    System.setProperty("db_type", "maria")
+//    System.setProperty("dbType", "maria")
     embeddedServer(Netty, port = 8080, host = "127.0.0.1", module = Application::module).start(wait = true)
 }

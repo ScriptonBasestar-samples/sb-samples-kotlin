@@ -18,7 +18,7 @@ open class TestBase {
 
     protected fun boardServer(callback: TestApplicationEngine.() -> Unit) {
         System.setProperty("testing", "true")
-        System.setProperty("db_type", "h2")
+        System.setProperty("dbType", "h2")
         withTestApplication(Application::module) {
             transaction {
                 SchemaUtils.dropDatabase()

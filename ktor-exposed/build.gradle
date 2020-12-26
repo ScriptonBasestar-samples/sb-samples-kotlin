@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'co.uzzu.dotenv.gradle' version '1.1.0'
-    id 'org.flywaydb.flyway' version '7.2.1'
+    id 'org.flywaydb.flyway' version '7.3.2'
 
     id "org.jlleitschuh.gradle.ktlint" version "9.4.1"
     id "org.jlleitschuh.gradle.ktlint-idea" version "9.4.1"
@@ -13,11 +13,15 @@ group = 'me.archmagece'
 version = '1.0-SNAPSHOT'
 
 sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 compileKotlin {
-    kotlinOptions.jvmTarget = '11'
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlinOptions.freeCompilerArgs = ['-Xjsr305=strict']
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '11'
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlinOptions.freeCompilerArgs = ['-Xjsr305=strict']
 }
 kotlin {
     experimental {
@@ -26,6 +30,7 @@ kotlin {
 }
 ktlint {
     debug = true
+    verbose = true
 }
 //configurations {
 //    ktlint
@@ -35,39 +40,36 @@ application {
     mainClassName = 'ServerKt'
 }
 
-//sourceSets {
-////    main {
-////        java {
-////            srcDir 'src/main/java'
-////        }
-////        kotlin {
-////            srcDir 'src/main/kotlin'
-////        }
-////    }
-//    checkTest {
-//        java {
-//            srcDir 'src/checktest/kotlin'
-//        }
-//    }
-//    unitTest {
-//        java {
-//            srcDir 'src/unittest/kotlin'
-//        }
-//        resources {
-//            srcDir 'src/unittest/resources'
-//        }
-//        compileClasspath += sourceSets.main.runtimeClasspath
-//    }
-//    integrationTest {
-//        java {
-//            srcDir 'src/integrationtest/kotlin'
-//        }
-//        resources {
-//            srcDir 'src/integrationtest/resources'
-//        }
-//        compileClasspath += sourceSets.main.runtimeClasspath
-//    }
-//}
+sourceSets {
+    check {
+        java {
+            srcDir 'src/main/java'
+        }
+        kotlin {
+            srcDir 'src/main/kotlin'
+            compileClasspath += sourceSets.main.runtimeClasspath
+        }
+    }
+    integration {
+        java {
+            srcDir 'src/test/java'
+        }
+        kotlin {
+            srcDir 'src/test/kotlin'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+        compileClasspath += sourceSets.test.runtimeClasspath
+        runtimeClasspath += sourceSets.test.runtimeClasspath
+    }
+}
+idea {
+    module {
+        testSourceDirs += sourceSets.integration.java.srcDirs
+        testSourceDirs += sourceSets.integration.kotlin.srcDirs
+    }
+}
 
 repositories {
     mavenCentral()
@@ -85,9 +87,9 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
     testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
 
-    // test, container
-    testImplementation "org.testcontainers:testcontainers:$testcontainer_version"
-    testImplementation "org.testcontainers:mariadb:$testcontainer_version"
+    // integration, container
+    integrationImplementation "org.testcontainers:testcontainers:$testcontainer_version"
+    integrationImplementation "org.testcontainers:mariadb:$testcontainer_version"
 
     // datasource
     implementation 'com.zaxxer:HikariCP:3.4.5'
@@ -138,17 +140,28 @@ dependencies {
     ktlint 'com.pinterest:ktlint:0.40.0'
 }
 
-//flyway {
-//    url = System.env.JDBC_URL ?: 'jdbc:h2:mem:test'
-//    user = System.env.DB_USER ?: 'sa'
-//    password = System.env.DB_PASS ?: ''
-//    createSchemas = true
-//}
-
+flyway {
+    url = System.env.JDBC_URL ?: 'jdbc:h2:mem:test'
+    user = System.env.DB_USER ?: 'sa'
+    password = System.env.DB_PASS ?: ''
+    locations = [
+        'classpath:db/migration'
+    ]
+//    locations = ["filesystem:${file('src/db/migration').absolutePath}"]
+    createSchemas = true
+    encoding = 'UTF-8'
+    outOfOrder = true
+    validateOnMigrate = true
+}
 
 task installKtlint(dependsOn: init, group: 'build setup') {
     doLast {
         addKtlintCheckGitPreCommitHook
         addKtlintFormatGitPreCommitHook
     }
+}
+
+task integrationTest(type: Test, dependsOn: test) {
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
 }
