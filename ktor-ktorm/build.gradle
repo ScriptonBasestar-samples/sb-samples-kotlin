@@ -1,0 +1,164 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'application'
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'co.uzzu.dotenv.gradle' version '1.1.0'
+    id 'org.flywaydb.flyway' version '7.3.2'
+
+    id "org.jlleitschuh.gradle.ktlint" version "9.4.1"
+    id "org.jlleitschuh.gradle.ktlint-idea" version "9.4.1"
+}
+group = 'me.archmagece'
+version = '1.0-SNAPSHOT'
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+compileKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlinOptions.freeCompilerArgs = ['-Xjsr305=strict']
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlinOptions.freeCompilerArgs = ['-Xjsr305=strict']
+}
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+ktlint {
+    debug = true
+    verbose = true
+}
+//configurations {
+//    ktlint
+//}
+
+application {
+    mainClassName = 'ServerKt'
+}
+
+sourceSets {
+    check {
+        java {
+            srcDir 'src/main/java'
+        }
+        kotlin {
+            srcDir 'src/main/kotlin'
+            compileClasspath += sourceSets.main.runtimeClasspath
+        }
+    }
+    integration {
+        java {
+            srcDir 'src/test/java'
+        }
+        kotlin {
+            srcDir 'src/test/kotlin'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+        compileClasspath += sourceSets.test.runtimeClasspath
+        runtimeClasspath += sourceSets.test.runtimeClasspath
+    }
+}
+idea {
+    module {
+        testSourceDirs += sourceSets.integration.java.srcDirs
+        testSourceDirs += sourceSets.integration.kotlin.srcDirs
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url 'https://dl.bintray.com/kotlin/ktor'
+    }
+    maven {
+        url 'https://dl.bintray.com/kotlin/kotlinx'
+    }
+}
+
+dependencies {
+    // test
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+    testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
+
+    // integration, container
+    integrationImplementation "org.testcontainers:testcontainers:$testcontainer_version"
+    integrationImplementation "org.testcontainers:mariadb:$testcontainer_version"
+
+    // datasource
+    implementation 'com.zaxxer:HikariCP:3.4.5'
+    // data
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.0'
+    // data, me.archmagece.migration
+    implementation 'org.flywaydb:flyway-core:5.1.4'
+//    implementation 'org.liquibase:liquibase-core:4.2.1'
+
+    // data, test
+    testRuntime 'com.h2database:h2:1.4.200'
+    // data, test
+//    implementation 'org.slf4j:slf4j-nop:1.7.30'
+    // <- maria
+    implementation 'com.google.guava:guava:22.0'
+    // data, validator
+    implementation 'org.hibernate.validator:hibernate-validator:6.1.1.Final'
+    // gson, serializer
+    implementation 'com.fatboyindustrial.gson-jodatime-serialisers:gson-jodatime-serialisers:1.8.0'
+
+    // ktor
+    implementation "io.ktor:ktor-server-core:$ktor_version"
+    implementation "io.ktor:ktor-gson:$ktor_version"
+    implementation "io.ktor:ktor-metrics:$ktor_version"
+    implementation "io.ktor:ktor-server-netty:$ktor_version"
+    implementation "io.ktor:ktor-websockets:$ktor_version"
+    implementation "io.ktor:ktor-auth:$ktor_version"
+    implementation "io.ktor:ktor-client-okhttp:$ktor_version"
+    implementation "io.ktor:ktor-html-builder:$ktor_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2'
+    // di
+    implementation 'com.github.salomonbrys.kodein:kodein:4.1.0'
+
+    // logger
+//    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'io.github.microutils:kotlin-logging-jvm:2.0.2'
+
+    implementation 'org.apache.commons:commons-lang3:3.1'
+
+    // orm
+    implementation "org.ktorm:ktorm-core:$ktorm_version"
+    implementation "org.ktorm:ktorm-jackson:$ktorm_version"
+    implementation "org.ktorm:ktorm-support-mysql:$ktorm_version"
+
+    ktlint 'com.pinterest:ktlint:0.40.0'
+}
+
+flyway {
+    url = System.env.JDBC_URL ?: 'jdbc:h2:mem:test'
+    user = System.env.DB_USER ?: 'sa'
+    password = System.env.DB_PASS ?: ''
+    locations = [
+        'classpath:db/migration'
+    ]
+//    locations = ["filesystem:${file('src/db/migration').absolutePath}"]
+    createSchemas = true
+    encoding = 'UTF-8'
+    outOfOrder = true
+    validateOnMigrate = true
+}
+
+task installKtlint(dependsOn: init, group: 'build setup') {
+    doLast {
+        addKtlintCheckGitPreCommitHook
+        addKtlintFormatGitPreCommitHook
+    }
+}
+
+task integrationTest(type: Test, dependsOn: test) {
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
+}
