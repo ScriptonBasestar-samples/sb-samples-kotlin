@@ -14,6 +14,8 @@ exposed에서는 orm으로 db생성을 하는데 지원이 미약해서
 
 jvm계열이면 kotlin 지원이 조금 약하해도 그냥 jpa-hibernate 쓰는게 제일 나을 것 같고
 
+ktorm 뭔가 좀 부실한데 DSL이랑 쿼리 문법도 간단하지가 않고
+
 ### Features
 
 * Lightweight web API
