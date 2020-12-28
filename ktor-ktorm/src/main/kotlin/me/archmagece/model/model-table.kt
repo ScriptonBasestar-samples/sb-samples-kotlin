@@ -18,11 +18,7 @@ object ArticleTable : Table<Nothing>("t_article") {
     val content = varchar("content")
     val formatType = varchar("format_type")
 
-    // FIXME db now - on create
-    // val createdAt = datetime("created_at").defaultExpression(nowExpression)
     val createdAt = datetime("created_at")
-
-    // FIXME db now - on update
     val updatedAt = datetime("updated_at")
 }
 
@@ -32,12 +28,11 @@ object CommentTable : Table<Nothing>("t_comment") {
     val galleryUid = uuid("gallery_uid")
     val userUid = uuid("user_uid")
 
+    val userNickname = varchar("user_nickname")
+
     // val article = reference("article", ArticleTable, onDelete = ReferenceOption.CASCADE)
     //    val articleId = uuid("article").references(ArticleModel.id, onDelete = ReferenceOption.CASCADE)
-
     // val parentUid = uuid("parent_id").references(CommentTable.id)
-
-    val userNickname = varchar("user_nickname")
 
     val content = varchar("content")
     val formatType = varchar("format_type")

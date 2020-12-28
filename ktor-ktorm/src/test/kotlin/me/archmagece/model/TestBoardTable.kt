@@ -3,13 +3,6 @@ package me.archmagece.model
 import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
 import org.ktorm.database.Database
 import java.util.Properties
@@ -19,6 +12,8 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class TestBoardTable {
+
+    lateinit var database: Database
 
     @BeforeTest
     fun before() {
@@ -30,11 +25,11 @@ class TestBoardTable {
         config.entrySet().forEach { e -> properties.setProperty(e.key, config.getString(e.key)) }
         val hikariConfig = HikariConfig(properties)
         val ds = HikariDataSource(hikariConfig)
-        val db = Database.connect(ds)
-        db.useConnection {
-            SchemaUtils.drop(ArticleTable, CommentTable)
-            SchemaUtils.create(ArticleTable, CommentTable)
-        }
+        database = Database.connect(ds)
+        // db.useConnection {
+        //     SchemaUtils.drop(ArticleTable, CommentTable)
+        //     SchemaUtils.create(ArticleTable, CommentTable)
+        // }
     }
 
     @Test
